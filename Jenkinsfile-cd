@@ -26,8 +26,8 @@ pipeline {
             steps {
                 sh '''
                 az aks get-credentials \
-                  --resource-group devsecops-rg \
-                  --name devsecops-aks \
+                  --resource-group jenkins-rg \
+                  --name aksdevscops \
                   --overwrite-existing
                 '''
             }
@@ -44,3 +44,4 @@ pipeline {
         }
     }
 }
+             
