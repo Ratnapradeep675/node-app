@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    environment {
+        AZURE_CREDENTIALS = credentials('azure-credentials')
+        AZURE_TENANT = credentials('azure-tenant')
+        AZURE_SUBSCRIPTION = credentials('azure-subscription')
+    }
+
+    stages {
+
+        stage('Azure Login') {
+            steps {
+                sh '''
+                az login --service-principal \
+                  -u ${AZURE_CREDENTIALS_USR} \
+                  -p ${AZURE_CREDENTIALS_PSW} \
+                  --tenant ${AZURE_TENANT}
+
+                az account set --subscription ${AZURE_SUBSCRIPTION}
+                '''
+            }
+        }
+
+        stage('Get AKS Credentials') {
+            steps {
+                sh '''
+                az aks get-credentials \
+                  --resource-group devsecops-rg \
+                  --name devsecops-aks \
+                  --overwrite-existing
+                '''
+            }
+        }
+
+        stage('Helm Deploy') {
+            steps {
+                sh '''
+                helm upgrade --install node-app ./helm \
+                  --set image.repository=devsecopsacr12345.azurecr.io/node-app \
+                  --set image.tag=${BUILD_TAG}
+                '''
+            }
+        }
+    }
+}
